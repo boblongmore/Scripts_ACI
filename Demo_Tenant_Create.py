@@ -15,18 +15,19 @@ import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
 
 #Login to APIC
-ls = cobra.mit.session.LoginSession(apicUrl, userName, password)
-md = cobra.mit.access.MoDirectory(ls)
-md.login()
+#ls = cobra.mit.session.LoginSession(apicUrl, userName, password)
+#md = cobra.mit.access.MoDirectory(ls)
+#md.login()
 
 #create Tenant
-def tenantCreate (tnName, epg1, epg2, epg3):
+def tenantCreate (apic_url, username, password, tnName, epg1, epg2, epg3, l3Out, VMM):
+	#Login to APIC
+	ls = cobra.mit.session.LoginSession("https://"+apic_url, username, password)
+	md = cobra.mit.access.MoDirectory(ls)
+	md.login()
 	polUni = cobra.model.pol.Uni('')
 	fvTenant = cobra.model.fv.Tenant(polUni, tnName)
 	fvCommon = cobra.model.fv.Tenant(polUni, 'common')
-
-	#create EPG array
-	#epgName = (epg1, epg2, epg3)
 
 	#Create VRF
 	fvCtx1 = cobra.model.fv.Ctx(fvTenant, name=tnName+'_VRF')
@@ -85,16 +86,16 @@ def tenantCreate (tnName, epg1, epg2, epg3):
 
 
 #start operations
-apicUrl = raw_input ("APIC URL > ")
-userName = raw_input ("username > ")
+apic_url = raw_input ("APIC URL > ")
+username = raw_input ("username > ")
 password = raw_input ("password > ")
-tenantInput = raw_input ("Tenant Name > ")
-epg1Input = raw_input ("EPG1 > ")
-epg2Input = raw_input ("EPG2 > ")
-epg3Input = raw_input ("EPG3 > ")
+tenant_input = raw_input ("Tenant Name > ")
+epg1_input = raw_input ("EPG1 > ")
+epg2_input = raw_input ("EPG2 > ")
+epg3_input = raw_input ("EPG3 > ")
 l3Out = raw_input ("L3 Out > ")
 VMM = raw_input ("VMM Domain > ")
 
-tenantCreate(tenantInput, epg1Input, epg2Input, epg3Input)
+tenantCreate(apic_url, username, password, tenant_input, epg1_input, epg2_input, epg3_input, l3Out, VMM)
 
 
