@@ -15,16 +15,12 @@ import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
 
 #Login to APIC
-#ls = cobra.mit.session.LoginSession(apicUrl, userName, password)
-#md = cobra.mit.access.MoDirectory(ls)
-#md.login()
+ls = cobra.mit.session.LoginSession('https://10.207.10.100', 'admin', 'password')
+md = cobra.mit.access.MoDirectory(ls)
+md.login()
 
 #create Tenant
-def tenantCreate (apic_url, username, password, tnName, epg1, epg2, epg3, l3Out, VMM):
-	#Login to APIC
-	ls = cobra.mit.session.LoginSession("https://"+apic_url, username, password)
-	md = cobra.mit.access.MoDirectory(ls)
-	md.login()
+def tenantCreate (tnName, epg1, epg2, epg3, l3Out, VMM):
 	polUni = cobra.model.pol.Uni('')
 	fvTenant = cobra.model.fv.Tenant(polUni, tnName)
 	fvCommon = cobra.model.fv.Tenant(polUni, 'common')
@@ -84,18 +80,23 @@ def tenantCreate (apic_url, username, password, tnName, epg1, epg2, epg3, l3Out,
 	c.addMo(fvTenant)
 	md.commit(c)
 
+#get VMWare VMM already created and present as choices
+def get_vmm():
+	vmmprovider = md.lookupByClass('vmmDomP', parentDn="uni")
+	for vmmd in vmmprovider:
+		print "{}".format(vmmd.rn)
+	vmm_choice = raw_input ("VMM Domain > ")
+	return(vmm_choice)
 
 #start operations
-apic_url = raw_input ("APIC URL > ")
-username = raw_input ("username > ")
-password = raw_input ("password > ")
 tenant_input = raw_input ("Tenant Name > ")
 epg1_input = raw_input ("EPG1 > ")
 epg2_input = raw_input ("EPG2 > ")
 epg3_input = raw_input ("EPG3 > ")
 l3Out = raw_input ("L3 Out > ")
-VMM = raw_input ("VMM Domain > ")
+#VMM = raw_input ("VMM Domain > ")
+VMM = get_vmm()
 
-tenantCreate(apic_url, username, password, tenant_input, epg1_input, epg2_input, epg3_input, l3Out, VMM)
+tenantCreate(tenant_input, epg1_input, epg2_input, epg3_input, l3Out, VMM)
 
 
