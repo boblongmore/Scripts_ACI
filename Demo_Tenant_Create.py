@@ -14,8 +14,9 @@ from cobra.internal.codec.xmlcodec import toXMLStr
 import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
 
+user_cred = raw_input("password: ")
 #Login to APIC
-ls = cobra.mit.session.LoginSession('https://10.207.10.100', 'admin', 'password')
+ls = cobra.mit.session.LoginSession('https://10.207.10.100', 'admin', user_cred)
 md = cobra.mit.access.MoDirectory(ls)
 md.login()
 
@@ -84,16 +85,19 @@ def tenantCreate (tnName, epg1, epg2, epg3, l3Out, VMM):
 def get_vmm():
 	vmmprovider = md.lookupByClass('vmmDomP', parentDn="uni")
 	for vmmd in vmmprovider:
-		print "{}".format(vmmd.rn)
+		vmm_convert =  str("{}".format(vmmd.rn))
+		(junk, vmm_spl) = vmm_convert.split('dom-')
+		print vmm_spl
+
 	vmm_choice = raw_input ("VMM Domain > ")
-	return(vmm_choice)
 
 #start operations
 tenant_input = raw_input ("Tenant Name > ")
 epg1_input = raw_input ("EPG1 > ")
 epg2_input = raw_input ("EPG2 > ")
 epg3_input = raw_input ("EPG3 > ")
-l3Out = raw_input ("L3 Out > ")
+#l3Out = raw_input ("L3 Out > ")
+l3Out = 'e7_N7K_L3'
 #VMM = raw_input ("VMM Domain > ")
 VMM = get_vmm()
 
