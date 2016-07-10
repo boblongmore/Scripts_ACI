@@ -90,14 +90,14 @@ def get_vmm():
 		print vmm_spl
 
 	vmm_choice = raw_input ("VMM Domain > ")
+	return vmm_choice
 
 #start operations
 tenant_input = raw_input ("Tenant Name > ")
 epg1_input = raw_input ("EPG1 > ")
 epg2_input = raw_input ("EPG2 > ")
 epg3_input = raw_input ("EPG3 > ")
-#l3Out = raw_input ("L3 Out > ")
-l3Out = 'e7_N7K_L3'
+l3Out = raw_input ("L3 Out > ")
 #VMM = raw_input ("VMM Domain > ")
 VMM = get_vmm()
 
