@@ -11,6 +11,7 @@ import cobra.model.l3ext
 import cobra.model.ospf
 import cobra.model.vz
 import credentials
+import xlrd
 from cobra.internal.codec.xmlcodec import toXMLStr
 import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
@@ -19,6 +20,25 @@ requests.packages.urllib3.disable_warnings()
 ls = cobra.mit.session.LoginSession('https:'+credentials.ACI_login["ipaddr"], credentials.ACI_login["username"], credentials.ACI_login["password"])
 md = cobra.mit.access.MoDirectory(ls)
 md.login()
+
+#open worksheet and find functions to run
+aci_book = xlrd.open_workbook("EPG_Input.xlsx")
+aci_sheet = aci_book.sheet_by_index(0)
+
+for row in range(aci_sheet.nrows):
+	for column in range(aci_sheet.ncols):
+		if aci_sheet.cell_value(row,column) == "Create_EPG":
+			EPG_name = aci_sheet.cell_value(row,1)
+			VMM_name = aci_sheet.cell_value(row,3)
+			BD_name = aci_sheet.cell_value(row,4)
+			Cnt_name = aci_sheet.cell_value(row,5)
+
+for name in aci_sheet.col_values(0):
+	if name == "Create_EPG":
+		CreateEPG()
+	elif name == "Create_BD":
+		Create_BD()
+		
 
 #create Tenant
 def CreateEPG (tn_name, epg_name, l3Out_name, VMM_name, VRF_name, BD_subnet, ANP_name):
