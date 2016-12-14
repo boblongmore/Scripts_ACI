@@ -30,12 +30,20 @@ def start_xls():
 		for column in range(aci_sheet.ncols):
 			if aci_sheet.cell_value(row,column) == "Create_EPG":
 				Create_EPG(aci_sheet,row)
+				print "Creating EPG"
 			elif aci_sheet.cell_value(row,column) == "Create_BD":
+				print "Creating Bridge Domain"
 				Create_BD(aci_sheet,row)
 		
 
 #create Tenant
 def Create_EPG (aci_sheet,row):
+	#Login to APIC
+	ls = cobra.mit.session.LoginSession('https://'+credentials.ACI_login["ipaddr"], credentials.ACI_login["username"], credentials.ACI_login["password"])
+	md = cobra.mit.access.MoDirectory(ls)
+	md.login()
+
+	#create variables by importing values from spreadsheet
 	tn_name = aci_sheet.cell_value(row,1)
 	ANP_name = aci_sheet.cell_value(row,2)
 	EPG_name = aci_sheet.cell_value(row,3)
@@ -50,32 +58,43 @@ def Create_EPG (aci_sheet,row):
 
 
 	#Define top level pol
-	#polUni = cobra.model.pol.Uni('')
-	#fvTenant = cobra.model.fv.Tenant(polUni, tn_name)
-	#fvCommon = cobra.model.fv.Tenant(polUni, 'common')
-	print tn_name
+	polUni = cobra.model.pol.Uni('')
+	fvTenant = cobra.model.fv.Tenant(polUni, tn_name)
+	print "The tenant name is: " + tn_name
 
 	#create ANP
-	#fvAp = cobra.model.fv.Ap(fvTenant, name=ANP_name)
-	print ANP_name
+	fvAp = cobra.model.fv.Ap(fvTenant, name=ANP_name)
+	print "The Applicaiton Profile name is:" + ANP_name
 
 	#create EPGs
-	#fvAEPg1 = cobra.model.fv.AEPg(fvAp, name=EPG_name)
-	print EPG_name
+	fvAEPg1 = cobra.model.fv.AEPg(fvAp, name=EPG_name)
+	print "The EPG name is: " + EPG_name
 
 	#Associate EPGs with Bridge Domains
-	#fvRsBd1 = cobra.model.fv.RsBd(fvAEPg1, tnFvBDName=BD_name)
-	print BD_name
+	fvRsBd1 = cobra.model.fv.RsBd(fvAEPg1, tnFvBDName=BD_name)
+	print "EPG " + EPG_name + " is associated with the bridge domain: " + BD_name
 
 	#Associate EPG with VMM Domain
 	if VMM_name != "None":
-		#fvRsDomAtt1 = cobra.model.fv.RsDomAtt(fvAEPg1, tDn='uni/vmmp-VMware/dom-'+VMM_name, resImedcy=u'immediate')
-		print VMM_name
+		fvRsDomAtt1 = cobra.model.fv.RsDomAtt(fvAEPg1, tDn='uni/vmmp-VMware/dom-'+VMM_name, resImedcy=u'immediate')
+		print "Associated with: " + VMM_name
 	elif VMM_name == "None":
 		print "No VMM Domain Selected"
 
+	#need to add contract
+
+	#Commit to the apic
+	c = cobra.mit.request.ConfigRequest()
+	c.addMo(fvTenant)
+	md.commit(c)
 
 def Create_BD(aci_sheet,row):
+	#Login to APIC
+	ls = cobra.mit.session.LoginSession('https://'+credentials.ACI_login["ipaddr"], credentials.ACI_login["username"], credentials.ACI_login["password"])
+	md = cobra.mit.access.MoDirectory(ls)
+	md.login()
+
+	#define variables from spreadsheet
 	tn_name = aci_sheet.cell_value(row,1)
 	BD_name = aci_sheet.cell_value(row,2)
 	VRF_name = aci_sheet.cell_value(row,3)
@@ -83,27 +102,39 @@ def Create_BD(aci_sheet,row):
 	advertise = aci_sheet.cell_value(row,5)
 	L3_out = aci_sheet.cell_value(row,6)
 
+
+	#Define top level pol
+	polUni = cobra.model.pol.Uni('')
+	fvTenant = cobra.model.fv.Tenant(polUni, tn_name)
+	print tn_name
+
+	#Create VRF
+	fvCtx = cobra.model.fv.Ctx(fvTenant, name=VRF_name)
+	print "VRF is: " + VRF_name
+
 	#Create Bridge Domain
-	#fvBD1 = cobra.model.fv.BD(fvTenant, name=BD_name)
+	fvBD1 = cobra.model.fv.BD(fvTenant, name=BD_name)
 	print BD_name
 	
 	#Associate Bridge Domain to VRF
-	#fvRsCtx1 = cobra.model.fv.RsCtx(fvBD1, tnFvCtxName=VRF_name)
+	fvRsCtx1 = cobra.model.fv.RsCtx(fvBD1, tnFvCtxName=VRF_name)
 	print VRF_name
 
-	#Associate Web Bridge Domain with L3 out
-	#fvRsBDToOut = cobra.model.fv.RsBDToOut(fvBD1, tnL3extOutName=L3_out)
-	print L3_out
 
 	#Create Subnets for the Bridge Domains, BD1 is allowed across VRFs
 	if advertise == "yes":
-		#fvSubnet1 = cobra.model.fv.Subnet(fvBD1, ip=subnet, scope='public,shared')
+		fvSubnet1 = cobra.model.fv.Subnet(fvBD1, ip=subnet, scope='public,shared')
+		#Associate Web Bridge Domain with L3 out
+		#fvRsBDToOut = cobra.model.fv.RsBDToOut(fvBD1, tnL3extOutName=L3_out)
 		print subnet +" is advertised"
 	elif advertise == "no":
-		#fvSubnet1 = cobra.model.fv.Subnet(fvBD1, ip=subnet, scope='private')
+		fvSubnet1 = cobra.model.fv.Subnet(fvBD1, ip=subnet)
 		print subnet + " is not advertised"
 
-
+	#Commit to the apic
+	c = cobra.mit.request.ConfigRequest()
+	c.addMo(fvTenant)
+	md.commit(c)
 
 
 
