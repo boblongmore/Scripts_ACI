@@ -16,10 +16,6 @@ from cobra.internal.codec.xmlcodec import toXMLStr
 import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
 
-#Login to APIC
-#ls = cobra.mit.session.LoginSession('https:'+credentials.ACI_login["ipaddr"], credentials.ACI_login["username"], credentials.ACI_login["password"])
-#md = cobra.mit.access.MoDirectory(ls)
-#md.login()
 
 #open worksheet and find functions to run
 def start_xls():
@@ -34,9 +30,11 @@ def start_xls():
 			elif aci_sheet.cell_value(row,column) == "Create_BD":
 				print "Creating Bridge Domain"
 				Create_BD(aci_sheet,row)
-		
+			elif aci_sheet.cell_value(row,column) == "Create_Contract":
+				print "Creating Contract"
+				Create_Contract(aci_sheet,row)
 
-#create Tenant
+#Create EPG
 def Create_EPG (aci_sheet,row):
 	#Login to APIC
 	ls = cobra.mit.session.LoginSession('https://'+credentials.ACI_login["ipaddr"], credentials.ACI_login["username"], credentials.ACI_login["password"])
@@ -88,6 +86,8 @@ def Create_EPG (aci_sheet,row):
 	c.addMo(fvTenant)
 	md.commit(c)
 
+
+# Create Bridge Domain
 def Create_BD(aci_sheet,row):
 	#Login to APIC
 	ls = cobra.mit.session.LoginSession('https://'+credentials.ACI_login["ipaddr"], credentials.ACI_login["username"], credentials.ACI_login["password"])
@@ -135,6 +135,47 @@ def Create_BD(aci_sheet,row):
 	c = cobra.mit.request.ConfigRequest()
 	c.addMo(fvTenant)
 	md.commit(c)
+
+# Create Contract and Filter
+def Create_Contract(aci_sheet,row):
+	#Login to APIC
+	ls = cobra.mit.session.LoginSession('https://'+credentials.ACI_login["ipaddr"], credentials.ACI_login["username"], credentials.ACI_login["password"])
+	md = cobra.mit.access.MoDirectory(ls)
+	md.login()
+
+	# Define Variables
+	tn_name = aci_sheet.cell_value(row,1)
+	Contract_name = aci_sheet.cell_value(row,2)
+	subject_name = aci_sheet.cell_value(row,3)
+	filter_name = aci_sheet.cell_value(row,4)
+	proto_type = aci_sheet.cell_value(row,5)
+	filter_port = aci_sheet.cell_value(row,6)
+	contract_scope = aci_sheet.cell_value(row,7)
+	if contract_scope == "VRF":
+		contract_scope = "context"
+
+	#Define top-level pol
+	polUni = cobra.model.pol.Uni('')
+	fvTenant = cobra.model.fv.Tenant(polUni, tn_name)
+
+	#create contract
+	vzBrCP = cobra.model.vz.BrCP(fvTenant, name=Contract_name, scope=contract_scope)
+
+	# built the contract subject
+	vzSubj = cobra.model.vz.Subj(vzBrCP, name=subject_name)
+	vzRsSubjFiltAtt = cobra.model.vz.RsSubjFiltAtt(vzSubj, directives=u'none', tnVzFilterName=filter_name)
+
+	# build the filter
+	vzFilter = cobra.model.vz.Filter(fvTenant, name=filter_name)
+	vzEntry = cobra.model.vz.Entry(vzFilter, name=filter_port, prot=proto_type, etherT=u'ip', dFromPort=filter_port, dToPort=filter_port)
+
+	#Commit to the apic
+	print "Creating contract " + Contract_name
+	c = cobra.mit.request.ConfigRequest()
+	c.addMo(fvTenant)
+	md.commit(c)
+
+
 
 
 
