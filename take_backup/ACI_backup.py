@@ -22,7 +22,7 @@ def take_backup ():
 	polUni = cobra.model.pol.Uni('')
 	fabricInst = cobra.model.fabric.Inst(polUni)
 
-	backup = cobra.model.config.ExportP(fabricInst, name="Bob_backup_12-17", snapshot="true", adminSt="triggered")
+	backup = cobra.model.config.ExportP(fabricInst, name="backup_created_with_python", snapshot="true", adminSt="triggered")
 
 	c = cobra.mit.request.ConfigRequest()
 	c.addMo(fabricInst)
