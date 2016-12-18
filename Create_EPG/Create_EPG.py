@@ -176,37 +176,6 @@ def Create_Contract(aci_sheet,row):
 	md.commit(c)
 
 
-
-
-
-
-	#Define External L3 information
-	#l3extOut = cobra.model.l3ext.Out(fvCommon, name=l3Out_name)
-	#l3extInstP = cobra.model.l3ext.InstP(l3extOut, name=l3Out_name)
-
-	#Associate Demo_Web Contract
-	#fvRsCons1 = cobra.model.fv.RsCons(fvAEPg1, tnVzBrCPName='Demo_Web')
-
-
-
-
-
-	#Commit to the apic
-	#c = cobra.mit.request.ConfigRequest()
-	#c.addMo(fvTenant)
-	#md.commit(c)
-
-#get VMWare VMM already created and present as choices
-#def get_vmm():
-#	vmmprovider = md.lookupByClass('vmmDomP', parentDn="uni")
-#	for vmmd in vmmprovider:
-#		vmm_convert =  str("{}".format(vmmd.rn))
-#		(junk, vmm_spl) = vmm_convert.split('dom-')
-#		print vmm_spl
-
-#	vmm_choice = raw_input ("VMM Domain > ")
-#	return vmm_choice
-
 #start operations
 start_xls()
 
