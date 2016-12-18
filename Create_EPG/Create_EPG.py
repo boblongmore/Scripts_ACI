@@ -53,6 +53,7 @@ def Create_EPG (aci_sheet,row):
 		VMM_name = "None"
 	BD_name = aci_sheet.cell_value(row,6)
 	cnt_name = aci_sheet.cell_value(row,7)
+	cnt_direction = aci_sheet.cell_value(row,8)
 
 
 	#Define top level pol
@@ -62,24 +63,36 @@ def Create_EPG (aci_sheet,row):
 
 	#create ANP
 	fvAp = cobra.model.fv.Ap(fvTenant, name=ANP_name)
-	print "The Applicaiton Profile name is:" + ANP_name
+	print "    The Application Profile name is:" + ANP_name
 
 	#create EPGs
 	fvAEPg1 = cobra.model.fv.AEPg(fvAp, name=EPG_name)
-	print "The EPG name is: " + EPG_name
+	print "        The EPG name is: " + EPG_name
 
 	#Associate EPGs with Bridge Domains
 	fvRsBd1 = cobra.model.fv.RsBd(fvAEPg1, tnFvBDName=BD_name)
-	print "EPG " + EPG_name + " is associated with the bridge domain: " + BD_name
+	print "        EPG " + EPG_name + " is associated with the bridge domain: " + BD_name
 
 	#Associate EPG with VMM Domain
 	if VMM_name != "None":
 		fvRsDomAtt1 = cobra.model.fv.RsDomAtt(fvAEPg1, tDn='uni/vmmp-VMware/dom-'+VMM_name, resImedcy=u'immediate')
-		print "Associated with: " + VMM_name
+		print "        Associated with: " + VMM_name
 	elif VMM_name == "None":
-		print "No VMM Domain Selected"
+		print "        No VMM Domain Selected"
 
 	#need to add contract
+	if (cnt_name == "none") or (cnt_name == "None") or (cnt_name == ""):
+		print "        No Contract defined"
+	else:
+		if cnt_direction == "provide" or "Provide":
+			print "        providing contract " + cnt_name
+			fvRsProv = cobra.model.fv.RsProv(fvAEPg1, tnVzBrCPName=cnt_name)
+		elif cnt_direction == "consume" or "Consume":
+			print "        consuming contract " + cnt_name
+			fvRsCons = cobra.model.fv.RsCons(fvAEPg1, tnVzBrCPName=cnt_name)
+
+
+
 
 	#Commit to the apic
 	c = cobra.mit.request.ConfigRequest()
@@ -106,19 +119,18 @@ def Create_BD(aci_sheet,row):
 	#Define top level pol
 	polUni = cobra.model.pol.Uni('')
 	fvTenant = cobra.model.fv.Tenant(polUni, tn_name)
-	print tn_name
+	print "Creaing Bridge Domain in " + tn_name
 
 	#Create VRF
 	fvCtx = cobra.model.fv.Ctx(fvTenant, name=VRF_name)
-	print "VRF is: " + VRF_name
+	print "    VRF is: " + VRF_name
 
 	#Create Bridge Domain
 	fvBD1 = cobra.model.fv.BD(fvTenant, name=BD_name)
-	print BD_name
+	print "    Bridge Domain name is: " + BD_name
 	
 	#Associate Bridge Domain to VRF
 	fvRsCtx1 = cobra.model.fv.RsCtx(fvBD1, tnFvCtxName=VRF_name)
-	print VRF_name
 
 
 	#Create Subnets for the Bridge Domains, BD1 is allowed across VRFs
@@ -126,10 +138,10 @@ def Create_BD(aci_sheet,row):
 		fvSubnet1 = cobra.model.fv.Subnet(fvBD1, ip=subnet, scope='public,shared')
 		#Associate Web Bridge Domain with L3 out
 		#fvRsBDToOut = cobra.model.fv.RsBDToOut(fvBD1, tnL3extOutName=L3_out)
-		print subnet +" is advertised"
+		print "        " + subnet +" is advertised"
 	elif advertise == "no":
 		fvSubnet1 = cobra.model.fv.Subnet(fvBD1, ip=subnet)
-		print subnet + " is not advertised"
+		print "        " + subnet + " is not advertised"
 
 	#Commit to the apic
 	c = cobra.mit.request.ConfigRequest()
@@ -157,9 +169,11 @@ def Create_Contract(aci_sheet,row):
 	#Define top-level pol
 	polUni = cobra.model.pol.Uni('')
 	fvTenant = cobra.model.fv.Tenant(polUni, tn_name)
+	print "Creating contract and filter in tenant" + tn_name
 
 	#create contract
 	vzBrCP = cobra.model.vz.BrCP(fvTenant, name=Contract_name, scope=contract_scope)
+	print "    Created contract " + Contract_name
 
 	# built the contract subject
 	vzSubj = cobra.model.vz.Subj(vzBrCP, name=subject_name)
@@ -168,9 +182,9 @@ def Create_Contract(aci_sheet,row):
 	# build the filter
 	vzFilter = cobra.model.vz.Filter(fvTenant, name=filter_name)
 	vzEntry = cobra.model.vz.Entry(vzFilter, name=filter_port, prot=proto_type, etherT=u'ip', dFromPort=filter_port, dToPort=filter_port)
+	print "        Created filter for port " + filter_port
 
 	#Commit to the apic
-	print "Creating contract " + Contract_name
 	c = cobra.mit.request.ConfigRequest()
 	c.addMo(fvTenant)
 	md.commit(c)
