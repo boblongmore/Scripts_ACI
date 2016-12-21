@@ -80,7 +80,7 @@ def Create_EPG (aci_sheet,row):
 	elif VMM_name == "None":
 		print "        No VMM Domain Selected"
 
-	#need to add contract
+	#associate with contract and determine provider or consumer
 	if (cnt_name == "none") or (cnt_name == "None") or (cnt_name == ""):
 		print "        No Contract defined"
 	else:
@@ -98,6 +98,18 @@ def Create_EPG (aci_sheet,row):
 	c = cobra.mit.request.ConfigRequest()
 	c.addMo(fvTenant)
 	md.commit(c)
+
+	#Check for EPG
+	tenant_list = md.lookupByClass ('fvTenant', parentDn='uni')
+	for tenant in tenant_list:
+		if tenant.name == tn_name:
+			epg_list = md.lookupByClass('fvAEPg', parentDn=tenant.dn)
+			for epg in epg_list:
+				if epg.name == EPG_name:
+					BD_assoc = md.lookupByClass('fvRsBd', parentDn=epg.dn)
+					bd_name = BD_assoc[0].tnFvBDName
+					print "In tenant " + tenant.name + ", epg " + epg.name + " exists and is associated with bridge domain " + bd_name + "."
+
 
 
 # Create Bridge Domain
