@@ -48,12 +48,14 @@ def Create_EPG (aci_sheet,row):
 	static_path = aci_sheet.cell_value(row,4)
 	if static_path == "":
 		static_path = "None"
-	VMM_name = aci_sheet.cell_value(row,5)
+	encap_vlan = str(int(aci_sheet.cell_value(row,5)))
+	Physical_Domain = aci_sheet.cell_value(row,6)
+	VMM_name = aci_sheet.cell_value(row,7)
 	if VMM_name == "":
 		VMM_name = "None"
-	BD_name = aci_sheet.cell_value(row,6)
-	cnt_name = aci_sheet.cell_value(row,7)
-	cnt_direction = aci_sheet.cell_value(row,8)
+	BD_name = aci_sheet.cell_value(row,8)
+	cnt_name = aci_sheet.cell_value(row,9)
+	cnt_direction = aci_sheet.cell_value(row,10)
 
 
 	#Define top level pol
@@ -79,6 +81,16 @@ def Create_EPG (aci_sheet,row):
 		print "        Associated with: " + VMM_name
 	elif VMM_name == "None":
 		print "        No VMM Domain Selected"
+
+	#Associate EPG with static path and physical domain
+	if static_path != "None":
+		fvRsPathAtt = cobra.model.fv.RsPathAtt(fvAEPg1, tDn=u'topology/pod-1/protpaths-201-202/pathep-[' + static_path + ']', encap='vlan-' + encap_vlan)
+		fvRsDomAtt = cobra.model.fv.RsDomAtt(fvAEPg1, instrImedcy=u'immediate', tDn='uni/phys-' + Physical_Domain, resImedcy=u'immediate')
+
+	elif static_path == "None":
+		print "        No Static Path Selected"
+
+
 
 	#associate with contract and determine provider or consumer
 	if (cnt_name == "none") or (cnt_name == "None") or (cnt_name == ""):
