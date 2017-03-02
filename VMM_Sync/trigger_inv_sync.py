@@ -41,7 +41,7 @@ def trigger_sync():
 	vmmDomP = cobra.model.vmm.DomP(vmmProvP, 'e7vmw1_Data')
 
 	# build the request using cobra syntax
-	vmmCtrlrP = cobra.model.vmm.CtrlrP(vmmDomP, inventoryTrigSt=u'0')
+	vmmCtrlrP = cobra.model.vmm.CtrlrP(vmmDomP, inventoryTrigSt='triggered')
 
 
 	# commit the generated code to APIC
