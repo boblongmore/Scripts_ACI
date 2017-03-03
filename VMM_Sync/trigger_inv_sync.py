@@ -41,7 +41,8 @@ def trigger_sync():
 	vmmDomP = cobra.model.vmm.DomP(vmmProvP, 'e7vmw1_Data')
 
 	# build the request using cobra syntax
-	vmmCtrlrP = cobra.model.vmm.CtrlrP(vmmDomP, inventoryTrigSt='triggered')
+	vmmCtrlrP = cobra.model.vmm.CtrlrP(vmmDomP, name='e7vmw1vic01', hostOrIp='e7vmw1vic01.datalinklabs.local', inventoryTrigSt='triggered')
+	#vmmTriggerInv = cobra.model.vmm.CtrlrP(vmmCtlrP, inventoryTrigSt='triggered')
 
 
 	# commit the generated code to APIC
