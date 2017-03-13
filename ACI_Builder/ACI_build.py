@@ -59,26 +59,31 @@ def Create_BD(aci_sheet,row):
 
     #create variables by importing values from spreadsheet	
 	tn_name = ACI.Tenant(aci_sheet.cell_value(row,1))
-	#ANP_name = ACI.AppProfile(aci_sheet.cell_value(row,2), tn_name)
-	#EPG_name = ACI.EPG(aci_sheet.cell_value(row,3), ANP_name)
 	VRF_name = ACI.Context(aci_sheet.cell_value(row,3), tn_name)
 	BD_name = ACI.BridgeDomain(aci_sheet.cell_value(row,2), tn_name)
+	advertise = aci_sheet.cell_value(row, 7)
 	subnet = ACI.Subnet((aci_sheet.cell_value(row,2) + '_subnet'), BD_name)
-	print subnet
 	subnet.set_addr(aci_sheet.cell_value(row,6))
-	#L3_out = aci_sheet.cell_value(row,6)
-	#advertise = aci_sheet.cell_value(row,5)
-
+	OutsideL3 = ACI.OutsideL3(aci_sheet.cell_value(row, 8), tn_name)
+	L3_out = aci_sheet.cell_value(row, 8)
 
 	BD_name.add_context(VRF_name)
 	BD_name.add_subnet(subnet)
 
-	#if advertise == "yes":
-	#	BD_name.add_l3out(L3_out)
+	if advertise == "yes":
+		BD_name.add_l3out(OutsideL3)
 
 	resp = session.push_to_apic(tn_name.get_url(), data=tn_name.get_json())
 	if resp.ok:
-		print 'Bridge Domain deployed'
+		print 'Bridge Domain %s deployed' %BD_name
+
+def Create_Contract(aci_sheet, row):
+	#call login function and return session 
+	session = APIC_login()
+
+	#create variables by importing values from spreadsheet
+
+
 
 
 
