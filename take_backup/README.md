@@ -1,6 +1,8 @@
-this script performs a config backup. You can change the name variable to be more user-friendly.
+this script performs a config backup. The script takes an argument on the command line for the backup name that will appear in ACI. 
 
-s script references a credentials file that has a dictionary of credentials for UCS and ACI. It is called credentials.py and should be in the following format.
+example: python ACI_backup.py This_backup_made_by_ACI_backup_script
+
+this script references a credentials file that has a dictionary of credentials for UCS and ACI. It is called credentials.py and should be in the following format.
 
 ACI_login = { 'ipaddr' : '10.1.1.1', 'username' : 'admin', 'password' : 'acipassword' }
 
