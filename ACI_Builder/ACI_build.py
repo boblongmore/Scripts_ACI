@@ -39,10 +39,11 @@ def Create_EPG(aci_sheet,row):
 	#call login function and return session 
 	session = APIC_login()
 
-    #create variables by importing values from spreadsheet
+	#create variables by importing values from spreadsheet
 	tn_name = ACI.Tenant(aci_sheet.cell_value(row,1))
 	ANP_name = ACI.AppProfile(aci_sheet.cell_value(row,2), tn_name)
 	EPG_name = ACI.EPG(aci_sheet.cell_value(row,3), ANP_name)
+	print EPG_name
 	BD_name = ACI.BridgeDomain(aci_sheet.cell_value(row,8), tn_name)
 	contract = ACI.Contract(aci_sheet.cell_value(row,9), tn_name)
 	direction = aci_sheet.cell_value(row,10)
@@ -50,9 +51,7 @@ def Create_EPG(aci_sheet,row):
 	EPG_name.add_bd(BD_name)
 
 	#figure out direction of provider/consumer relationship
-	if contract == '' or 'None':
-		print 'No Contract Selected'	
-	elif direction == 'consume':
+	if direction == 'consume':
 		EPG_name.consume(contract)
 	elif direction == 'provide':
 		EPG_name.provide(contract)
@@ -89,6 +88,7 @@ def Create_BD(aci_sheet,row):
 	resp = session.push_to_apic(tn_name.get_url(), data=tn_name.get_json())
 	if resp.ok:
 		print 'Bridge Domain %s deployed' %BD_name
+		print '=' * 20
 
 def Create_Contract(aci_sheet,row):
 	#call login function and return session 
@@ -116,6 +116,7 @@ def Create_Contract(aci_sheet,row):
 	resp = session.push_to_apic(tn_name.get_url(), data=tn_name.get_json())
 	if resp.ok:
 		print 'Contract %s deployed' %contract_name
+		print '=' * 20
 	else:
 		print 'contract %s not deployed' %contract_name
 
