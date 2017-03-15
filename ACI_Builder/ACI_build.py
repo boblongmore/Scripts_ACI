@@ -58,7 +58,30 @@ def Create_EPG(aci_sheet,row):
 	elif direction == '' or 'None':
 		print 'No provider or consumer direction selected'
 
-	#ensure tenant exists
+	# define the physical interfaces
+	#get_phys = aci_sheet.cell_value(row,4)
+	#get_phys_split = get_phys.split('/')
+	#if1 = ACI.Interface('eth', get_phys_split[0], get_phys_split[1], get_phys_split[2], get_phys_split[3])
+	intf1 = ACI.Interface('eth', '1', '201', '1', '24')
+	intf2 = ACI.Interface('eth', '1', '202', '1', '24')
+	pc1 = ACI.PortChannel('e7f50bigip01')
+	pc1.attach(intf1)
+	pc1.attach(intf2)
+	print pc1
+
+	#define the encapsulation
+	get_vlan_id = int(aci_sheet.cell_value(row,5))
+	print get_vlan_id
+	static_encap_if = ACI.L2Interface ('encap_' + str(get_vlan_id), 'vlan', get_vlan_id)
+
+	#attach encap to physical interface
+	static_encap_if.attach(pc1)
+
+	#attach static port binding to EPG
+	EPG_name.attach(static_encap_if)
+
+
+	#ensure tenant exists and push configuration
 	resp = session.push_to_apic(tn_name.get_url(), data=tn_name.get_json())
 	if resp.ok:
 		print 'Tenant %s deployed' % tn_name
