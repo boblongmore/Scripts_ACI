@@ -50,10 +50,21 @@ def Create_EPG(aci_sheet, row):
     BD_name = ACI.BridgeDomain(aci_sheet.cell_value(row, 8), tn_name)
     contract = ACI.Contract(aci_sheet.cell_value(row, 9), tn_name)
     direction = aci_sheet.cell_value(row, 10)
-    vmm_name = ACI.VMM(aci_sheet.cell_value(row, 7), tn_name)
-    print vmm_name
+    vmm_name = ACI.EPGDomain.get_by_name(session, (aci_sheet.cell_value(row, 7)))
+    phy_domain_name = ACI.EPGDomain.get_by_name(session, (aci_sheet.cell_value(row, 6)))
 
+    #associated EPG with Bridge Domain
     EPG_name.add_bd(BD_name)
+
+    #associate EPG with VMM DOmain
+    if vmm_name == None:
+        print "no VMM domain selected"
+    else:
+        EPG_name.add_infradomain(vmm_name)
+        print "EPG %s associated with vmm domain %s" % (EPG_name, vmm_name)
+
+    #set EPG for intra-EPG isolation
+    #EPG_name.set_intra_epg_isolation('enforced')
 
     # figure out direction of provider/consumer relationship
     if direction == 'consume':
@@ -84,6 +95,7 @@ def Create_EPG(aci_sheet, row):
 
         # attach static port binding to EPG
         EPG_name.attach(static_encap_if)
+        print 'EPG %s is associated with interface %s with encap vlan-' % (EPG_name, intf1, get_vlan_id)
     #if the vpc_port matches, the second sheet of the spreadsheet is consulted to get the physical interfaces of the VPC name
     elif vpc_port.match(get_phys):
         phys_aci_book = xlrd.open_workbook("EPG_Input.xlsx")
@@ -103,7 +115,6 @@ def Create_EPG(aci_sheet, row):
 
                     # define the encapsulation
                     get_vlan_id = int(aci_sheet.cell_value(row, 5))
-                    print get_vlan_id
                     static_encap_if = ACI.L2Interface('encap_' + str(get_vlan_id), 'vlan', get_vlan_id)
 
                     # attach encap to physical interface
@@ -111,9 +122,15 @@ def Create_EPG(aci_sheet, row):
 
                     # attach static port binding to EPG
                     EPG_name.attach(static_encap_if)
-                    print 'pc1 %s' % pc1
+                    print 'EPG %s is associated with VPC %s with encap vlan-%s' % (EPG_name, get_phys, get_vlan_id)
 
-    #associate VMM domain
+
+    #associate EPG with physical domain
+    if phy_domain_name == None:
+        print 'no physical domain selected'
+    else:
+        EPG_name.add_infradomain(phy_domain_name)
+        print 'EPG %s associated with physical domain %s' % (EPG_name, phy_domain_name)
 
 
 
